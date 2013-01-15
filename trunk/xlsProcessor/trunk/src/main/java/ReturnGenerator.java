@@ -3,6 +3,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.swing.*;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
@@ -28,8 +30,8 @@ public class ReturnGenerator
             System.out.println("******** If the file path contains space, please add quote around it. ");
             System.out.println("******** Example: java -jar \"C:\\my Excel.xls\"");
         }
-        ReturnGenerator rg = new ReturnGenerator(args[0]);
-        rg.generate();
+        ReturnGenerator rg = new ReturnGenerator(new File(args[0]));
+        //rg.generate();
 
     }
 
@@ -40,39 +42,43 @@ public class ReturnGenerator
     private File targetFile;
     private FileInputStream fis = null;
 
-    public ReturnGenerator(String location)
-    {
-        this.location = location;
-        try
-        {
-            fis = new FileInputStream(location);
-
-        if (location.contains("xlsx"))
-        {
-            wb = new XSSFWorkbook(fis);
-        }
-        else
-        {
-            POIFSFileSystem fs = new POIFSFileSystem(fis);
-            wb = new HSSFWorkbook(fs);
-        }
-        }
-        catch (IOException e)
-        {
-            System.out.println("...................Loading file Error. ");
-            System.out.println();
-            e.printStackTrace();
-        }
-    }
+//    public ReturnGenerator(String location)
+//    {
+//        this.location = location;
+//        try
+//        {
+//            fis = new FileInputStream(location);
+//
+//        if (location.contains("xlsx"))
+//        {
+//            wb = new XSSFWorkbook(fis);
+//        }
+//        else
+//        {
+//            POIFSFileSystem fs = new POIFSFileSystem(fis);
+//            wb = new HSSFWorkbook(fs);
+//        }
+//        }
+//        catch (IOException e)
+//        {
+//            System.out.println("...................Loading file Error. ");
+//            System.out.println();
+//            e.printStackTrace();
+//        }
+//    }
 
     public ReturnGenerator(File file){
         location = file.getAbsolutePath();
         targetFile = file;
+        init();
+    }
+
+    public void init(){
         try
         {
-            fis = new FileInputStream(file);
+            fis = new FileInputStream(targetFile);
 
-            if (file.getName().contains("xlsx"))
+            if (targetFile.getName().contains("xlsx"))
             {
                 wb = new XSSFWorkbook(fis);
             }
@@ -88,19 +94,19 @@ public class ReturnGenerator
             System.out.println();
             e.printStackTrace();
         }
-
     }
 
-    public void init(){
-
-    }
-
-    public void generate() throws IOException
+    public void generate(JProgressBar bar, JTextArea info) throws IOException
     {
 
         dataSource = wb.getSheetAt(0);
 
         totalRowNumber = getRealLastRowNumber(dataSource);
+        bar.setValue(10);
+        info.append("File load successfully!\n");
+        bar.setValue(30);
+        info.append("There are " + (totalRowNumber - 1) + " rows in this file. Start process...\n");
+        info.append("Start process...\n");
         System.out.println("File load successfully!");
         System.out.println("There are " + (totalRowNumber - 1) + " rows in this file. Start process...");
 
@@ -115,12 +121,14 @@ public class ReturnGenerator
             Row quarterRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
             createCellForFirstColumn(dataSource, quarterRow, "QTD");
             generateReturnByPeriod(dataSource, quarterRow, 3);
+            info.append("QTD calculated...\n");
         }
         if (totalRowNumber > 13)
         {
             Row yearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
             createCellForFirstColumn(dataSource, yearlyRow, "YTD");
             generateReturnByPeriod(dataSource, yearlyRow, 12);
+            info.append("YTD calculated...\n");
         }
 
         if (totalRowNumber > 37)
@@ -128,6 +136,7 @@ public class ReturnGenerator
             Row threeYearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
             createCellForFirstColumn(dataSource, threeYearlyRow, "36 Mo.");
             generateReturnByPeriod(dataSource, threeYearlyRow, 36);
+            info.append("36 Mo calculated...\n");
         }
 
         if (totalRowNumber > 61)
@@ -135,20 +144,27 @@ public class ReturnGenerator
             Row fiveYearlyRow = resultSheet.createRow(4);
             createCellForFirstColumn(dataSource, fiveYearlyRow, "60 Mo.");
             generateReturnByPeriod(dataSource, fiveYearlyRow, 60);
+            info.append("60 Mo calculated...\n");
         }
 
         Row sinceInception = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
         createCellForFirstColumn(dataSource, sinceInception, "Since Inception");
         generateReturnByPeriod(dataSource, sinceInception, totalRowNumber - 1);
+        info.append("Since Inception calculated...\n");
 
-
+        bar.setValue(70);
         fis.close();
         File file = new File(location);
         file.delete();
-
+        bar.setValue(80);
         FileOutputStream out = new FileOutputStream(location);
         wb.write(out);
         out.close();
+
+        info.append("******** Congratulations Linda!\n");
+        info.append("File: " + targetFile.getName() + " process Complete. \n");
+        info.append("The result is in the \"result-sheet\" of the original file.\n");
+        bar.setValue(100);
         System.out.println("******** Congratulations Linda!");
         System.out.println("******** File: " + location + " process Complete. ");
         System.out.println("******** The result is in the \"result-sheet\" of the original file. ");
