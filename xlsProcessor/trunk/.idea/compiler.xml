@@ -29,6 +29,9 @@
         <module name="xlsProcessor" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="xlsProcessor" target="1.6" />
+    </bytecodeTargetLevel>
   </component>
 </project>
 
