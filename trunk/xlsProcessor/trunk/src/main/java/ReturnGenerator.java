@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.swing.*;
 
@@ -42,38 +44,40 @@ public class ReturnGenerator
     private File targetFile;
     private FileInputStream fis = null;
 
-//    public ReturnGenerator(String location)
-//    {
-//        this.location = location;
-//        try
-//        {
-//            fis = new FileInputStream(location);
-//
-//        if (location.contains("xlsx"))
-//        {
-//            wb = new XSSFWorkbook(fis);
-//        }
-//        else
-//        {
-//            POIFSFileSystem fs = new POIFSFileSystem(fis);
-//            wb = new HSSFWorkbook(fs);
-//        }
-//        }
-//        catch (IOException e)
-//        {
-//            System.out.println("...................Loading file Error. ");
-//            System.out.println();
-//            e.printStackTrace();
-//        }
-//    }
+    //    public ReturnGenerator(String location)
+    //    {
+    //        this.location = location;
+    //        try
+    //        {
+    //            fis = new FileInputStream(location);
+    //
+    //        if (location.contains("xlsx"))
+    //        {
+    //            wb = new XSSFWorkbook(fis);
+    //        }
+    //        else
+    //        {
+    //            POIFSFileSystem fs = new POIFSFileSystem(fis);
+    //            wb = new HSSFWorkbook(fs);
+    //        }
+    //        }
+    //        catch (IOException e)
+    //        {
+    //            System.out.println("...................Loading file Error. ");
+    //            System.out.println();
+    //            e.printStackTrace();
+    //        }
+    //    }
 
-    public ReturnGenerator(File file){
+    public ReturnGenerator(File file)
+    {
         location = file.getAbsolutePath();
         targetFile = file;
         init();
     }
 
-    public void init(){
+    public void init()
+    {
         try
         {
             fis = new FileInputStream(targetFile);
@@ -102,6 +106,7 @@ public class ReturnGenerator
         dataSource = wb.getSheetAt(0);
 
         totalRowNumber = getRealLastRowNumber(dataSource);
+
         bar.setValue(10);
         info.append("File load successfully!\n");
         bar.setValue(30);
@@ -115,20 +120,33 @@ public class ReturnGenerator
         Row firstRow = dataSource.getRow(0);
         copyRow(firstRow, resultSheet.createRow(0));
 
-
+        if (totalRowNumber > 2)
+        {
+            Row oneMonthRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, oneMonthRow, "1 Mo.");
+            generateReturnByPeriod(dataSource, oneMonthRow, 1);
+            info.append("1 Mo. calculated...\n");
+        }
+        if (totalRowNumber > 3)
+        {
+            Row twoMonthRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, twoMonthRow, "2 Mo.");
+            generateReturnByPeriod(dataSource, twoMonthRow, 2);
+            info.append("2 Mo. calculated...\n");
+        }
         if (totalRowNumber > 4)
         {
-            Row quarterRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
-            createCellForFirstColumn(dataSource, quarterRow, "QTD");
-            generateReturnByPeriod(dataSource, quarterRow, 3);
-            info.append("QTD calculated...\n");
+            Row threeMonthRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, threeMonthRow, "3 Mo.");
+            generateReturnByPeriod(dataSource, threeMonthRow, 3);
+            info.append("3 Mo. calculated...\n");
         }
         if (totalRowNumber > 13)
         {
-            Row yearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
-            createCellForFirstColumn(dataSource, yearlyRow, "YTD");
-            generateReturnByPeriod(dataSource, yearlyRow, 12);
-            info.append("YTD calculated...\n");
+            Row twelveMonthRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, twelveMonthRow, "12 Mo.");
+            generateReturnByPeriod(dataSource, twelveMonthRow, 12);
+            info.append("12 Mo calculated...\n");
         }
 
         if (totalRowNumber > 37)
@@ -141,10 +159,32 @@ public class ReturnGenerator
 
         if (totalRowNumber > 61)
         {
-            Row fiveYearlyRow = resultSheet.createRow(4);
+            Row fiveYearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
             createCellForFirstColumn(dataSource, fiveYearlyRow, "60 Mo.");
             generateReturnByPeriod(dataSource, fiveYearlyRow, 60);
             info.append("60 Mo calculated...\n");
+        }
+        if (totalRowNumber > 121)
+        {
+            Row tenYearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, tenYearlyRow, "120 Mo.");
+            generateReturnByPeriod(dataSource, tenYearlyRow, 120);
+            info.append("120 Mo calculated...\n");
+        }
+
+        int lastJul = getLastJulyRowNumber(dataSource);
+        if(lastJul != -1){
+            Row fiscalYearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, fiscalYearlyRow, "Fiscal YTD");
+            generateReturnByPeriod(dataSource, fiscalYearlyRow, totalRowNumber-lastJul+1);
+            info.append("Fiscal YTD calculated...\n");
+        }
+        int lastJan = getLastJanuaryRowNumber(dataSource);
+        if(lastJan != -1){
+            Row yearlyRow = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
+            createCellForFirstColumn(dataSource, yearlyRow, "YTD");
+            generateReturnByPeriod(dataSource, yearlyRow, totalRowNumber-lastJan+1);
+            info.append("YTD calculated...\n");
         }
 
         Row sinceInception = resultSheet.createRow(resultSheet.getLastRowNum() + 1);
@@ -293,6 +333,44 @@ public class ReturnGenerator
         }
     }
 
+
+    private int getLastJulyRowNumber(Sheet dataSource)
+    {
+        int lastJul = -1;
+        for (int i = totalRowNumber; i > 1; i--)
+        {
+            Date cellValue =  dataSource.getRow(i).getCell(0).getDateCellValue();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM");
+            String month = sdf.format(cellValue);
+            if (month.equals("07"))
+            {
+                return i;
+            }
+        }
+        return lastJul;
+    }
+    private int getLastJanuaryRowNumber(Sheet dataSource)
+    {
+        int lastJan = -1;
+        for (int i = totalRowNumber; i > 1; i--)
+        {
+            Date cellValue =  dataSource.getRow(i).getCell(0).getDateCellValue();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM");
+            String month = sdf.format(cellValue);
+            if (month.equals("01"))
+            {
+                return i;
+            }
+        }
+        return lastJan;
+    }
+
+
+    /**
+     * @param dataSource the working sheet
+     * @param resultRow the row to be appended
+     * @param period the time period to be calculated, calculate from the bottom to top.
+     */
     private void generateReturnByPeriod(Sheet dataSource, Row resultRow, int period)
     {
         int lastColumnNumber = getColumnNumber(dataSource);
