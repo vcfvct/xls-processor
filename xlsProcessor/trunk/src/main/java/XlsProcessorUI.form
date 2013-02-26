@@ -11,12 +11,6 @@
         <constraints border-constraint="Center"/>
         <properties/>
       </component>
-      <component id="a42f3" class="javax.swing.JButton" binding="startProcessButton" default-binding="true">
-        <constraints border-constraint="South"/>
-        <properties>
-          <text value="Start Process"/>
-        </properties>
-      </component>
       <component id="7b503" class="javax.swing.JProgressBar" binding="progressBar1" default-binding="true">
         <constraints border-constraint="North"/>
         <properties/>
@@ -25,6 +19,25 @@
         <constraints border-constraint="East"/>
         <properties/>
       </component>
+      <grid id="5d70f" binding="buttonPanel" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="532e3" class="javax.swing.JButton" binding="generateReturnButton">
+            <constraints/>
+            <properties>
+              <text value="Generate Return"/>
+            </properties>
+          </component>
+          <component id="80c36" class="javax.swing.JButton" binding="generateIRRButton">
+            <constraints/>
+            <properties>
+              <text value="Generate IRR"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>

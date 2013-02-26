@@ -14,10 +14,12 @@ import javax.swing.*;
 public class XlsProcessorUI
 {
     private JPanel panel1;
-    private JButton startProcessButton;
+    private JButton generateReturnButton;
     private JFileChooser fileChooser;
     private JProgressBar progressBar1;
     private JTextArea progressInfo;
+    private JPanel buttonPanel;
+    private JButton generateIRRButton;
 
     public XlsProcessorUI()
     {
@@ -39,12 +41,12 @@ public class XlsProcessorUI
 
                     if (file != null && file.isFile() && file.getName().contains("xls"))
                     {
-                        startProcessButton.setEnabled(true);
+                        generateReturnButton.setEnabled(true);
 
                     }
                     else if (file != null)
                     {
-                        startProcessButton.setEnabled(false);
+                        generateReturnButton.setEnabled(false);
                     }
                 }
 
@@ -52,8 +54,41 @@ public class XlsProcessorUI
             }
         });
 
+        generateIRRButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                progressBar1.setValue(0);
+                progressInfo.setText("");
+                Runnable runner = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        File file = fileChooser.getSelectedFile();
+                        if (file == null)
+                        {
+                            return;
+                        }
+                        IRRGenerator generator = new IRRGenerator(file);
+                        try
+                        {
+                            generator.generate(progressBar1, progressInfo);
+                        }
+                        catch (IOException e1)
+                        {
+                            e1.printStackTrace();
+                        }
+                    }
+                };
+                Thread t = new Thread(runner, "Code Executer");
+                t.start();
 
-        startProcessButton.addActionListener(new ActionListener()
+            }
+        });
+
+        generateReturnButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
@@ -95,7 +130,7 @@ public class XlsProcessorUI
 
     public static void main(String[] args)
     {
-        JFrame frame = new JFrame("XlsProcessorUI");
+        JFrame frame = new JFrame("XlsProcessor for KeelPoint -- Linda");
         frame.setPreferredSize(new Dimension(800,600));
         frame.setContentPane(new XlsProcessorUI().panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
