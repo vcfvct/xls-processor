@@ -3,10 +3,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
-
+   <name>Excel Processor</name>
    <groupId>xlsProcessor</groupId>
    <artifactId>xlsProcessor</artifactId>
    <version>4.0</version>
+   <packaging>jar</packaging>
 
    <dependencies>
       <dependency>
@@ -29,9 +30,21 @@
          <artifactId>binding</artifactId>
          <version>1.0</version>
       </dependency>
+      <dependency>
+         <groupId>org.apache.maven.surefire</groupId>
+         <artifactId>surefire-junit4</artifactId>
+         <version>2.4.3</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
+
    <build>
+      <resources>
+         <resource>
+            <directory>src/main/java</directory>
+         </resource>
+      </resources>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -42,7 +55,6 @@
                <target>1.6</target>
             </configuration>
          </plugin>
-
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
@@ -63,6 +75,23 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>ideauidesigner-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>javac2</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <fork>true</fork>
+               <debug>true</debug>
+               <failOnError>true</failOnError>
+            </configuration>
+         </plugin>
+
       </plugins>
    </build>
 </project>
