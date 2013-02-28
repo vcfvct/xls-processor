@@ -42,11 +42,13 @@ public class XlsProcessorUI
                     if (file != null && file.isFile() && file.getName().contains("xls"))
                     {
                         generateReturnButton.setEnabled(true);
+                        generateIRRButton.setEnabled(true);
 
                     }
                     else if (file != null)
                     {
                         generateReturnButton.setEnabled(false);
+                        generateIRRButton.setEnabled(false);
                     }
                 }
 
