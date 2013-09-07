@@ -120,7 +120,6 @@ public class XlsProcessorUI
                 };
                 Thread t = new Thread(runner, "Code Executer");
                 t.start();
-
             }
         });
     }
