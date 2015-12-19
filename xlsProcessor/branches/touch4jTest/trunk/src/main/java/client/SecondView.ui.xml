@@ -1,7 +1,0 @@
-<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-             xmlns:g='urn:import:com.google.gwt.user.client.ui'
-             xmlns:touch="urn:import:com.emitrom.touch4j.client.ui">
-   <touch:Panel ui:field="container"  >
-      <touch:GoogleMap useCurrentLocation="true" />
-   </touch:Panel>
-</ui:UiBinder>
