@@ -9,6 +9,11 @@
    <version>4.0</version>
    <packaging>jar</packaging>
 
+   <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+   </properties>
+
    <dependencies>
       <dependency>
          <groupId>org.apache.poi</groupId>
@@ -49,15 +54,16 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>2.3.1</version>
+            <version>3.3</version>
             <configuration>
-               <source>1.6</source>
-               <target>1.6</target>
+               <source>1.8</source>
+               <target>1.8</target>
             </configuration>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
+            <version>2.4.2</version>
             <executions>
                <execution>
                   <phase>package</phase>
@@ -66,7 +72,7 @@
                      <goal>shade</goal>
                   </goals>
                   <configuration>
-                     <finalName>${artifactId}-${version}</finalName>
+                     <finalName>${project.artifactId}-${project.version}</finalName>
                      <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                            <mainClass>XlsProcessorUI</mainClass>
@@ -79,6 +85,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>ideauidesigner-maven-plugin</artifactId>
+            <version>1.0-beta-1</version>
             <executions>
                <execution>
                   <goals>

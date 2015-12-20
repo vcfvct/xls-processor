@@ -31,95 +31,71 @@ public class XlsProcessorUI
         fileChooser.setName("XLS Processor");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.setFileFilter(new Xlsfilter());
-        fileChooser.addPropertyChangeListener(new PropertyChangeListener()
-        {
-            public void propertyChange(PropertyChangeEvent evt)
+        fileChooser.addPropertyChangeListener(evt -> {
+            if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(evt.getPropertyName()))
             {
-                if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(evt.getPropertyName()))
+                File file = (File) evt.getNewValue();
+
+                if (file != null && file.isFile() && file.getName().contains("xls"))
                 {
-                    File file = (File) evt.getNewValue();
+                    generateReturnButton.setEnabled(true);
+                    generateIRRButton.setEnabled(true);
 
-                    if (file != null && file.isFile() && file.getName().contains("xls"))
-                    {
-                        generateReturnButton.setEnabled(true);
-                        generateIRRButton.setEnabled(true);
-
-                    }
-                    else if (file != null)
-                    {
-                        generateReturnButton.setEnabled(false);
-                        generateIRRButton.setEnabled(false);
-                    }
                 }
-
-                fileChooser.repaint();
+                else if (file != null)
+                {
+                    generateReturnButton.setEnabled(false);
+                    generateIRRButton.setEnabled(false);
+                }
             }
+
+            fileChooser.repaint();
         });
 
-        generateIRRButton.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                progressBar1.setValue(0);
-                progressInfo.setText("");
-                Runnable runner = new Runnable()
+        generateIRRButton.addActionListener(e -> {
+            progressBar1.setValue(0);
+            progressInfo.setText("");
+            Runnable runner = () -> {
+                File file = fileChooser.getSelectedFile();
+                if (file == null)
                 {
-                    @Override
-                    public void run()
-                    {
-                        File file = fileChooser.getSelectedFile();
-                        if (file == null)
-                        {
-                            return;
-                        }
-                        IRRGenerator generator = new IRRGenerator(file);
-                        try
-                        {
-                            generator.generate(progressBar1, progressInfo);
-                        }
-                        catch (IOException e1)
-                        {
-                            e1.printStackTrace();
-                        }
-                    }
-                };
-                Thread t = new Thread(runner, "Code Executer");
-                t.start();
-            }
+                    return;
+                }
+                IRRGenerator generator = new IRRGenerator(file);
+                try
+                {
+                    generator.generate(progressBar1, progressInfo);
+                }
+                catch (IOException e1)
+                {
+                    e1.printStackTrace();
+                }
+            };
+            Thread t = new Thread(runner, "Code Executer");
+            t.start();
         });
 
-        generateReturnButton.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                progressBar1.setValue(0);
-                progressInfo.setText("");
-                Runnable runner = new Runnable()
+        generateReturnButton.addActionListener(e -> {
+            progressBar1.setValue(0);
+            progressInfo.setText("");
+            Runnable runner = () -> {
+                File file = fileChooser.getSelectedFile();
+                if (file == null)
                 {
-                    @Override
-                    public void run()
-                    {
-                        File file = fileChooser.getSelectedFile();
-                        if (file == null)
-                        {
-                            return;
-                        }
-                        ReturnGenerator generator = new ReturnGenerator(file);
-                        try
-                        {
-                            generator.generate(progressBar1, progressInfo);
-                        }
-                        catch (IOException e1)
-                        {
-                            e1.printStackTrace();
-                        }
-                    }
-                };
-                Thread t = new Thread(runner, "Code Executer");
-                t.start();
-            }
+                    return;
+                }
+                ReturnGenerator generator = new ReturnGenerator(file);
+                try
+                {
+                    generator.generate(progressBar1, progressInfo);
+                }
+                catch (IOException e1)
+                {
+                    e1.printStackTrace();
+                }
+            };
+            Thread t = new Thread(runner, "Code Executer");
+            t.start();
         });
     }
 
@@ -133,7 +109,7 @@ public class XlsProcessorUI
         JFrame frame = new JFrame("XlsProcessor for KeelPoint -- Linda");
         frame.setPreferredSize(new Dimension(800,600));
         frame.setContentPane(new XlsProcessorUI().panel1);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
 
